@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">简读</string>
+
+    <!-- 顶部栏 -->
+    <string name="action_mine">我的</string>
+    <string name="action_import">导入文本</string>
+    <string name="action_menu">打开我的</string>
+
+    <!-- 抽屉（我的） -->
+    <string name="drawer_title">我的</string>
+    <string name="drawer_subtitle">最近打开的文本</string>
+    <string name="drawer_empty_title">还没有打开过文本</string>
+    <string name="drawer_empty_body">点击右上角的「导入」按钮，从本地存储中选择一个文本文件</string>
+    <string name="drawer_remove">移除记录</string>
+
+    <!-- 阅读区占位 -->
+    <string name="reader_empty_title">简读 · 文本阅读器</string>
+    <string name="reader_empty_body">导入本地文本后，将自动划分章节与段落。\n长按段落选中文字，即可在弹出的「阅读」按钮上开始朗读。</string>
+
+    <!-- 选中工具栏 -->
+    <string name="action_read">阅读</string>
+    <string name="action_select_paragraph">整段</string>
+    <string name="action_copy">复制</string>
+
+    <!-- 无障碍：段落朗读提示 -->
+    <string name="reader_paragraph_hint">第 %1$d 段。长按可选中文字并朗读</string>
+
+    <!-- 朗读控制 -->
+    <string name="tts_engine_unknown">语音引擎</string>
+    <string name="tts_preparing">正在准备语音引擎…</string>
+    <string name="tts_play">播放</string>
+    <string name="tts_pause">暂停</string>
+    <string name="tts_stop">停止朗读</string>
+    <string name="tts_next">下一句</string>
+    <string name="tts_previous">上一句</string>
+    <string name="tts_rate">语速 %1$s</string>
+
+    <!-- 语音引擎（Qwen3-TTS 端侧模型） -->
+    <string name="engine_title">语音引擎</string>
+    <string name="engine_system_voice">系统语音</string>
+    <string name="engine_qwen3">Qwen3-TTS（端侧）</string>
+    <string name="engine_active">当前朗读引擎：%1$s</string>
+    <string name="engine_installed">端侧模型已安装：%1$s</string>
+    <string name="engine_not_installed">Qwen3-TTS 端侧模型未安装（约 1.5 GB）。安装后朗读完全离线、音色更自然。</string>
+    <string name="engine_downloading">正在下载 %1$s（%2$d/%3$d）%4$d%%</string>
+    <string name="engine_download_resumable">可中断，再次点击会从断点继续</string>
+    <string name="engine_download">下载模型</string>
+    <string name="engine_continue">继续下载</string>
+    <string name="engine_delete">删除端侧模型</string>
+    <string name="engine_requirement">可用存储：%1$d MB（需要约 1500 MB）</string>
+    <string name="engine_memory_hint">设备内存偏低，建议继续使用系统语音</string>
+    <string name="engine_probe">检测网络</string>
+
+    <!-- 端侧图组描述 -->
+    <string name="engine_graph_fast_and_ref">快速图组 + 精度图组</string>
+    <string name="engine_graph_fast">快速图组（int8 MTP + 拆分编解码器）</string>
+    <string name="engine_graph_ref">精度图组（fp32）</string>
+    <string name="engine_graph_none">无</string>
+
+    <!-- 端侧模型下载失败原因（可行动提示） -->
+    <string name="engine_err_verify">下载完成但文件校验未通过，请重试</string>
+    <string name="engine_err_dns">无法解析模型下载地址，请检查网络后重试</string>
+    <string name="engine_err_timeout">连接模型服务器超时，请稍后重试（已下载部分会保留）</string>
+    <string name="engine_err_permission">缺少网络权限，无法下载模型</string>
+    <string name="engine_err_ssl">安全连接失败，请稍后重试或切换网络</string>
+    <string name="engine_err_http">模型服务器返回 %1$s（镜像可能暂不可用）</string>
+    <string name="engine_err_generic">下载失败</string>
+    <string name="engine_err_download_file">下载 %1$s 失败</string>
+    <string name="engine_err_download_http">下载 %1$s 失败：HTTP %2$d</string>
+    <string name="engine_err_incomplete">%1$s 文件不完整（%2$d 字节）</string>
+    <string name="engine_probe_reachable">可访问（HTTP %1$d，%2$d MB）</string>
+    <string name="engine_probe_reachable_nolen">可访问（HTTP %1$d）</string>
+    <string name="engine_probe_http">服务端返回 HTTP %1$d</string>
+    <string name="engine_probe_running">正在检测镜像连通性…</string>
+    <string name="engine_probe_failed">检测失败：%1$s</string>
+    <string name="engine_storage_insufficient">存储空间不足：需要约 1.5 GB，当前可用 %1$d MB</string>
+    <string name="engine_download_incomplete">模型下载未完成，可再次点击继续下载</string>
+    <string name="engine_deleted">已删除端侧模型，朗读将使用系统语音</string>
+
+    <!-- 系统语音（兜底引擎）失败提示 -->
+    <string name="system_tts_init_failed">系统语音引擎初始化失败，请在系统设置中检查文字转语音服务</string>
+    <string name="system_tts_no_voice_data">设备未安装可用的语音数据，请在系统设置中下载中文语音包</string>
+    <string name="system_tts_not_ready">系统语音引擎尚未就绪</string>
+    <string name="system_tts_rejected">朗读请求被系统拒绝</string>
+    <string name="system_tts_failed">朗读失败：设备可能缺少可用的语音数据，可在系统设置 → 语音合成中下载</string>
+
+    <!-- 端侧引擎( Qwen3-TTS )失败提示 -->
+    <string name="qwen3_load_failed">端侧语音模型加载失败：%1$s</string>
+    <string name="qwen3_not_ready">端侧语音模型尚未就绪</string>
+    <string name="qwen3_audio_output_failed">无法创建音频输出：%1$s</string>
+    <string name="qwen3_synthesis_failed">端侧语音合成失败：%1$s</string>
+
+    <!-- 启动权限引导 -->
+    <string name="perm_title">权限与联网</string>
+    <string name="perm_intro">为完成「导入文本」「下载端侧语音模型」，应用需要以下能力。系统不允许弹窗授予的项目，点按钮会跳到对应设置页，返回后会自动刷新状态。</string>
+    <string name="perm_storage_title">存储访问</string>
+    <string name="perm_storage_desc">用于直接读写手机上的文本文件。不授权也可用：导入文本走系统文件选择器（SAF），模型存在应用私有目录。</string>
+    <string name="perm_network_title">网络</string>
+    <string name="perm_network_desc">仅用于下载可选的 Qwen3-TTS 端侧模型（约 1.5 GB）。网络权限在安装时已自动授予，这里检测的是当前是否联网。</string>
+    <string name="perm_install_title">安装未知应用</string>
+    <string name="perm_install_desc">用于安装应用自身的新版本 APK（Android 8 起需在系统设置中手动开启）。</string>
+    <string name="perm_footnote">提示：以上均为可选项，全部跳过也不影响「导入文本 + 系统语音朗读」。</string>
+    <string name="perm_done">完成</string>
+    <string name="perm_dont_ask">不再提示</string>
+    <string name="perm_action_request">立即授权</string>
+    <string name="perm_action_all_files">打开设置</string>
+    <string name="perm_action_unknown">打开设置</string>
+    <string name="perm_action_network">打开网络设置</string>
+    <string name="perm_reopen">权限与联网</string>
+
+    <!-- 应用内自更新 -->
+    <string name="update_title">检查更新 / 关于</string>
+    <string name="update_current">当前版本：%1$s（versionCode %2$d）\n构建时间：%3$s</string>
+    <string name="update_manifest_label">更新清单地址（JSON）</string>
+    <string name="update_manifest_hint">https://…/update.json</string>
+    <string name="update_check">检查更新</string>
+    <string name="update_pick_local">从本地选 APK</string>
+    <string name="update_checking">正在检查…</string>
+    <string name="update_latest">已是最新版本（%1$s）</string>
+    <string name="update_available">发现新版本 %1$s（versionCode %2$d）</string>
+    <string name="update_download">下载新版本</string>
+    <string name="update_downloading">正在下载 %1$d%%（%2$d / %3$d MB）</string>
+    <string name="update_downloading_unknown">正在下载…（已 %1$d MB）</string>
+    <string name="update_ready">APK 已就绪（%1$s），校验通过，可以安装</string>
+    <string name="update_need_install_permission">尚未允许「安装未知应用」，需要先在系统设置中开启</string>
+    <string name="update_open_install_permission">去开启</string>
+    <string name="update_install">安装</string>
+    <string name="update_close">关闭</string>
+    <string name="update_hint">用系统安装器覆盖安装后，本应用的 versionCode 与构建时间会变化——这是确认「是否真的更新了」的依据（同版本号覆盖安装不会带来新功能）。若安装器提示「应用未安装」，通常是签名不一致（debug/release 混装）或新包版本更低。</string>
+    <string name="update_entry">检查更新 / 关于</string>
+    <string name="update_version_line">版本 %1$s（build %2$d）· %3$s</string>
+
+    <!-- 自更新流程提示与校验失败原因 -->
+    <string name="update_manifest_missing">请先填写更新清单地址（JSON），或改用「从本地选择 APK」</string>
+    <string name="update_check_failed">检查更新失败</string>
+    <string name="update_download_failed">下载失败</string>
+    <string name="update_local_apk_name">本地 APK</string>
+    <string name="update_read_apk_failed">读取 APK 失败</string>
+    <string name="update_need_permission_first">请先允许「安装未知应用」，再点安装</string>
+    <string name="update_handed_to_installer">已交给系统安装器：确认安装 %1$s 即可完成更新</string>
+    <string name="update_installer_failed">无法拉起安装器：%1$s</string>
+    <string name="update_server_http">更新服务器返回 HTTP %1$d</string>
+    <string name="update_unknown_version">未知</string>
+    <string name="update_download_http">下载 APK 失败：HTTP %1$d</string>
+    <string name="update_not_apk">文件不是有效的 APK</string>
+    <string name="update_no_package_name">无法读取 APK 包名</string>
+    <string name="update_package_mismatch">APK 包名不匹配（%1$s ≠ %2$s）</string>
+    <string name="update_version_lower">APK 版本更低（%1$d &lt; %2$d），系统会拒绝安装</string>
+    <string name="update_version_mismatch">APK 版本号与清单不一致（%1$d ≠ %2$d）</string>
+    <string name="update_signature_mismatch">签名与已安装应用不一致，系统会拒绝更新（常见于 debug/release 混装或换了打包机器）</string>
+    <string name="update_sha_mismatch">APK 校验失败（SHA-256 不匹配）</string>
+    <string name="update_read_selected_apk_failed">无法读取所选 APK</string>
+
+    <!-- 导入 / 阅读区提示 -->
+    <string name="import_truncated">文件超过 %1$dMB，仅显示前部分内容</string>
+    <string name="import_failed">导入失败：%1$s</string>
+    <string name="import_unknown_error">未知错误</string>
+    <string name="import_uri_unavailable">《%1$s》已无法访问，请重新导入该文件</string>
+    <string name="import_open_failed">无法打开所选文件，请重新导入</string>
+    <string name="import_unnamed">未命名文本</string>
+    <string name="import_empty_file">这个文件没有任何文字内容</string>
+    <string name="reader_empty_file_title">文件是空的</string>
+    <string name="reader_empty_file_body">所选文件里没有可显示的文本。换一个文件试试，或确认文件内容已保存。</string>
+    <string name="engine_fallback_to_system">端侧语音引擎不可用，已自动切换为系统语音</string>
+    <string name="engine_switched_to_qwen3">端侧模型已就绪，朗读引擎已切换为 Qwen3-TTS</string>
+
+    <!-- 通用 -->
+    <string name="error_open_settings_failed">无法打开设置页：%1$s</string>
+    <string name="error_open_picker_failed">无法打开文件选择器：%1$s</string>
+</resources>

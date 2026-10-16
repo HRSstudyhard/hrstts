@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 深色模式下的窗口底色 -->
+    <style name="Theme.JianDu" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#17120D</item>
+    </style>
+</resources>

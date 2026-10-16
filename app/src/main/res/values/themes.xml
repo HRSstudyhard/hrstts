@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 仅用于 Compose 接管界面之前的窗口底色（浅色纸面），避免启动白/黑闪 -->
+    <style name="Theme.JianDu" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">#FFF8F3</item>
+    </style>
+</resources>

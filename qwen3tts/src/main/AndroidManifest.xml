@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Qwen3-TTS LiteRT 推理模块：无组件、无权限，仅提供库代码与 LiteRT 的 native 库。 -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" />

@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">JianDu</string>
+
+    <!-- Top app bar -->
+    <string name="action_mine">Mine</string>
+    <string name="action_import">Import text</string>
+    <string name="action_menu">Open Mine</string>
+
+    <!-- Drawer (Mine) -->
+    <string name="drawer_title">Mine</string>
+    <string name="drawer_subtitle">Recently opened texts</string>
+    <string name="drawer_empty_title">No texts opened yet</string>
+    <string name="drawer_empty_body">Tap “Import” in the top-right corner and pick a text file from your device</string>
+    <string name="drawer_remove">Remove entry</string>
+
+    <!-- Reader placeholder -->
+    <string name="reader_empty_title">JianDu · Text Reader</string>
+    <string name="reader_empty_body">Import a local text and it will be split into chapters and paragraphs automatically.\nLong-press a paragraph to select text, then tap “Read” to start listening.</string>
+
+    <!-- Selection toolbar -->
+    <string name="action_read">Read</string>
+    <string name="action_select_paragraph">Paragraph</string>
+    <string name="action_copy">Copy</string>
+
+    <!-- Accessibility: paragraph read-aloud hint -->
+    <string name="reader_paragraph_hint">Paragraph %1$d. Long-press to select text and read it aloud</string>
+
+    <!-- Read-aloud controls -->
+    <string name="tts_engine_unknown">Speech engine</string>
+    <string name="tts_preparing">Preparing the speech engine…</string>
+    <string name="tts_play">Play</string>
+    <string name="tts_pause">Pause</string>
+    <string name="tts_stop">Stop reading</string>
+    <string name="tts_next">Next sentence</string>
+    <string name="tts_previous">Previous sentence</string>
+    <string name="tts_rate">Speech rate %1$s</string>
+
+    <!-- Speech engine (on-device Qwen3-TTS) -->
+    <string name="engine_title">Speech engine</string>
+    <string name="engine_system_voice">System voice</string>
+    <string name="engine_qwen3">Qwen3-TTS (on-device)</string>
+    <string name="engine_active">Current engine: %1$s</string>
+    <string name="engine_installed">On-device model installed: %1$s</string>
+    <string name="engine_not_installed">The on-device Qwen3-TTS model is not installed (about 1.5 GB). Once installed, reading works fully offline with a more natural voice.</string>
+    <string name="engine_downloading">Downloading %1$s (%2$d/%3$d) %4$d%%</string>
+    <string name="engine_download_resumable">You can stop and resume later from where it left off</string>
+    <string name="engine_download">Download model</string>
+    <string name="engine_continue">Resume download</string>
+    <string name="engine_delete">Delete on-device model</string>
+    <string name="engine_requirement">Free storage: %1$d MB (about 1500 MB needed)</string>
+    <string name="engine_memory_hint">This device has little memory; staying with the system voice is recommended</string>
+    <string name="engine_probe">Test network</string>
+
+    <!-- On-device graph sets -->
+    <string name="engine_graph_fast_and_ref">Fast graphs + reference graphs</string>
+    <string name="engine_graph_fast">Fast graphs (int8 MTP + split codec)</string>
+    <string name="engine_graph_ref">Reference graphs (fp32)</string>
+    <string name="engine_graph_none">None</string>
+
+    <!-- On-device model download failures -->
+    <string name="engine_err_verify">Download finished but file verification failed. Please try again</string>
+    <string name="engine_err_dns">Cannot resolve the model download address. Check your network and retry</string>
+    <string name="engine_err_timeout">Timed out connecting to the model server. Try again later (already downloaded parts are kept)</string>
+    <string name="engine_err_permission">Missing network permission, cannot download the model</string>
+    <string name="engine_err_ssl">Secure connection failed. Try again later or switch networks</string>
+    <string name="engine_err_http">Model server returned %1$s (the mirror may be temporarily unavailable)</string>
+    <string name="engine_err_generic">Download failed</string>
+    <string name="engine_err_download_file">Failed to download %1$s</string>
+    <string name="engine_err_download_http">Failed to download %1$s: HTTP %2$d</string>
+    <string name="engine_err_incomplete">%1$s is incomplete (%2$d bytes)</string>
+    <string name="engine_probe_reachable">Reachable (HTTP %1$d, %2$d MB)</string>
+    <string name="engine_probe_reachable_nolen">Reachable (HTTP %1$d)</string>
+    <string name="engine_probe_http">Server returned HTTP %1$d</string>
+    <string name="engine_probe_running">Testing mirror reachability…</string>
+    <string name="engine_probe_failed">Test failed: %1$s</string>
+    <string name="engine_storage_insufficient">Not enough storage: about 1.5 GB needed, %1$d MB available</string>
+    <string name="engine_download_incomplete">Model download did not finish; tap again to continue</string>
+    <string name="engine_deleted">On-device model deleted; reading will use the system voice</string>
+
+    <!-- System voice (fallback engine) failures -->
+    <string name="system_tts_init_failed">Failed to initialize the system speech engine. Check the text-to-speech service in system settings</string>
+    <string name="system_tts_no_voice_data">No usable voice data on this device. Download a voice package in system settings</string>
+    <string name="system_tts_not_ready">The system speech engine is not ready yet</string>
+    <string name="system_tts_rejected">The system rejected the speech request</string>
+    <string name="system_tts_failed">Reading failed: this device may lack usable voice data. Download it in Settings → Text-to-speech</string>
+
+    <!-- On-device engine (Qwen3-TTS) failures -->
+    <string name="qwen3_load_failed">Failed to load the on-device speech model: %1$s</string>
+    <string name="qwen3_not_ready">The on-device speech model is not ready yet</string>
+    <string name="qwen3_audio_output_failed">Cannot create the audio output: %1$s</string>
+    <string name="qwen3_synthesis_failed">On-device speech synthesis failed: %1$s</string>
+
+    <!-- Startup permission guide -->
+    <string name="perm_title">Permissions &amp; network</string>
+    <string name="perm_intro">To import text and download the on-device speech model, the app needs the following. Items that cannot be granted by a dialog will open the matching settings page; the state refreshes when you come back.</string>
+    <string name="perm_storage_title">Storage access</string>
+    <string name="perm_storage_desc">Used to read and write text files on the device directly. Not required: importing uses the system file picker (SAF) and the model lives in app-private storage.</string>
+    <string name="perm_network_title">Network</string>
+    <string name="perm_network_desc">Only used to download the optional on-device Qwen3-TTS model (about 1.5 GB). The network permission is granted at install time; this checks whether you are online right now.</string>
+    <string name="perm_install_title">Install unknown apps</string>
+    <string name="perm_install_desc">Used to install a new version of this app itself (a manual toggle in system settings since Android 8).</string>
+    <string name="perm_footnote">Note: all of these are optional. Skipping them does not affect importing text and reading with the system voice.</string>
+    <string name="perm_done">Done</string>
+    <string name="perm_dont_ask">Don\'t ask again</string>
+    <string name="perm_action_request">Grant now</string>
+    <string name="perm_action_all_files">Open settings</string>
+    <string name="perm_action_unknown">Open settings</string>
+    <string name="perm_action_network">Open network settings</string>
+    <string name="perm_reopen">Permissions &amp; network</string>
+
+    <!-- In-app update -->
+    <string name="update_title">Check for updates / About</string>
+    <string name="update_current">Current version: %1$s (versionCode %2$d)\nBuild time: %3$s</string>
+    <string name="update_manifest_label">Update manifest URL (JSON)</string>
+    <string name="update_manifest_hint">https://…/update.json</string>
+    <string name="update_check">Check for updates</string>
+    <string name="update_pick_local">Pick a local APK</string>
+    <string name="update_checking">Checking…</string>
+    <string name="update_latest">Already up to date (%1$s)</string>
+    <string name="update_available">New version %1$s (versionCode %2$d) is available</string>
+    <string name="update_download">Download new version</string>
+    <string name="update_downloading">Downloading %1$d%% (%2$d / %3$d MB)</string>
+    <string name="update_downloading_unknown">Downloading… (%1$d MB so far)</string>
+    <string name="update_ready">APK ready (%1$s), verification passed, ready to install</string>
+    <string name="update_need_install_permission">“Install unknown apps” is not allowed yet; enable it in system settings first</string>
+    <string name="update_open_install_permission">Enable</string>
+    <string name="update_install">Install</string>
+    <string name="update_close">Close</string>
+    <string name="update_hint">After installing over the existing app with the system installer, the versionCode and build time change — that is how you confirm the update really happened (installing the same versionCode brings no new features). If the installer says “App not installed”, the signing key usually differs (debug/release mix) or the new package has a lower version.</string>
+    <string name="update_entry">Check for updates / About</string>
+    <string name="update_version_line">Version %1$s (build %2$d) · %3$s</string>
+
+    <!-- Update flow messages and verification failures -->
+    <string name="update_manifest_missing">Enter the update manifest URL (JSON) first, or use “Pick a local APK”</string>
+    <string name="update_check_failed">Update check failed</string>
+    <string name="update_download_failed">Download failed</string>
+    <string name="update_local_apk_name">Local APK</string>
+    <string name="update_read_apk_failed">Failed to read the APK</string>
+    <string name="update_need_permission_first">Allow “Install unknown apps” first, then tap Install</string>
+    <string name="update_handed_to_installer">Handed to the system installer: confirm the install of %1$s to finish updating</string>
+    <string name="update_installer_failed">Cannot launch the installer: %1$s</string>
+    <string name="update_server_http">Update server returned HTTP %1$d</string>
+    <string name="update_unknown_version">unknown</string>
+    <string name="update_download_http">APK download failed: HTTP %1$d</string>
+    <string name="update_not_apk">The file is not a valid APK</string>
+    <string name="update_no_package_name">Cannot read the APK package name</string>
+    <string name="update_package_mismatch">APK package mismatch (%1$s ≠ %2$s)</string>
+    <string name="update_version_lower">APK version is lower (%1$d &lt; %2$d); the system will refuse to install</string>
+    <string name="update_version_mismatch">APK version does not match the manifest (%1$d ≠ %2$d)</string>
+    <string name="update_signature_mismatch">Signature differs from the installed app, so the system will refuse the update (usually a debug/release mix or a different build machine)</string>
+    <string name="update_sha_mismatch">APK verification failed (SHA-256 mismatch)</string>
+    <string name="update_read_selected_apk_failed">Cannot read the selected APK</string>
+
+    <!-- Import / reader messages -->
+    <string name="import_truncated">File is larger than %1$dMB; only the first part is shown</string>
+    <string name="import_failed">Import failed: %1$s</string>
+    <string name="import_unknown_error">unknown error</string>
+    <string name="import_uri_unavailable">“%1$s” is no longer accessible. Please import the file again</string>
+    <string name="import_open_failed">Cannot open the selected file. Please import it again</string>
+    <string name="import_unnamed">Untitled text</string>
+    <string name="import_empty_file">This file has no text content</string>
+    <string name="reader_empty_file_title">The file is empty</string>
+    <string name="reader_empty_file_body">The selected file has no displayable text. Try another file, or make sure its content was saved.</string>
+    <string name="engine_fallback_to_system">The on-device engine is unavailable; switched to the system voice</string>
+    <string name="engine_switched_to_qwen3">The on-device model is ready; reading switched to Qwen3-TTS</string>
+
+    <!-- Common -->
+    <string name="error_open_settings_failed">Cannot open the settings page: %1$s</string>
+    <string name="error_open_picker_failed">Cannot open the file picker: %1$s</string>
+</resources>
