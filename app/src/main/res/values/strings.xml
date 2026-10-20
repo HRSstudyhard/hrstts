@@ -165,6 +165,36 @@
     <string name="engine_fallback_to_system">端侧语音引擎不可用，已自动切换为系统语音</string>
     <string name="engine_switched_to_qwen3">端侧模型已就绪，朗读引擎已切换为 Qwen3-TTS</string>
 
+    <!-- 远程（电脑）合成 -->
+    <string name="engine_remote">电脑合成（远程）</string>
+    <string name="remote_card_title">电脑合成（远程 TTS）</string>
+    <string name="remote_card_body">把文本发给电脑、由电脑合成语音再传回手机。手机不用装模型、不吃内存，音色与速度取决于电脑。</string>
+    <string name="remote_enable">使用电脑合成</string>
+    <string name="remote_server_label">电脑地址</string>
+    <string name="remote_server_hint">例如 10.62.61.202:8080</string>
+    <string name="remote_test">测试连接</string>
+    <string name="remote_testing">正在连接…</string>
+    <string name="remote_connected">已连接 · %1$s</string>
+    <string name="remote_untested">未测试</string>
+    <string name="remote_disconnected">未连接</string>
+    <string name="remote_voice_label">电脑音色</string>
+    <string name="remote_sync_action">把整本预下载到手机</string>
+    <string name="remote_sync_running">同步中 %1$d / %2$d</string>
+    <string name="remote_sync_done">已同步 %1$d 句，断网也能连续朗读</string>
+    <string name="remote_sync_no_book">先导入一本书再同步</string>
+    <string name="remote_switched">朗读引擎已切换为电脑合成</string>
+    <string name="remote_fallback_to_local">电脑连不上，已切回本地引擎</string>
+    <string name="remote_no_server">还没有填电脑地址</string>
+    <string name="remote_connect_failed">连接电脑失败：%1$s</string>
+    <string name="remote_not_ready">电脑合成引擎还没就绪</string>
+    <string name="remote_audio_output_failed">无法创建音频输出：%1$s</string>
+    <string name="remote_synthesis_failed">电脑合成失败：%1$s</string>
+    <string name="remote_error_unknown_host">找不到这个地址，请检查电脑地址是否填错</string>
+    <string name="remote_error_refused">电脑拒绝连接（服务没启动，或被防火墙挡住）</string>
+    <string name="remote_error_timeout">连接电脑超时，请确认手机和电脑在同一个网络</string>
+    <string name="remote_error_no_route">手机到电脑不通，请确认连的是同一个 WiFi</string>
+    <string name="remote_error_ssl">安全连接失败</string>
+
     <!-- 通用 -->
     <string name="error_open_settings_failed">无法打开设置页：%1$s</string>
     <string name="error_open_picker_failed">无法打开文件选择器：%1$s</string>

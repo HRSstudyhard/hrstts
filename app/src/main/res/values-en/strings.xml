@@ -165,6 +165,36 @@
     <string name="engine_fallback_to_system">The on-device engine is unavailable; switched to the system voice</string>
     <string name="engine_switched_to_qwen3">The on-device model is ready; reading switched to Qwen3-TTS</string>
 
+    <!-- Remote (desktop) synthesis -->
+    <string name="engine_remote">Desktop (remote)</string>
+    <string name="remote_card_title">Desktop synthesis (remote TTS)</string>
+    <string name="remote_card_body">Text is sent to your computer, synthesized there, and streamed back. No model on the phone, no extra memory; voice and speed depend on the computer.</string>
+    <string name="remote_enable">Use desktop synthesis</string>
+    <string name="remote_server_label">Server address</string>
+    <string name="remote_server_hint">e.g. 10.62.61.202:8080</string>
+    <string name="remote_test">Test connection</string>
+    <string name="remote_testing">Connecting…</string>
+    <string name="remote_connected">Connected · %1$s</string>
+    <string name="remote_untested">Not tested</string>
+    <string name="remote_disconnected">Not connected</string>
+    <string name="remote_voice_label">Desktop voice</string>
+    <string name="remote_sync_action">Pre-download the whole book</string>
+    <string name="remote_sync_running">Syncing %1$d / %2$d</string>
+    <string name="remote_sync_done">Synced %1$d sentences; reading works offline now</string>
+    <string name="remote_sync_no_book">Import a book first</string>
+    <string name="remote_switched">Reading switched to desktop synthesis</string>
+    <string name="remote_fallback_to_local">Desktop unreachable; switched back to the local engine</string>
+    <string name="remote_no_server">No server address yet</string>
+    <string name="remote_connect_failed">Cannot reach the computer: %1$s</string>
+    <string name="remote_not_ready">Desktop engine is not ready yet</string>
+    <string name="remote_audio_output_failed">Cannot create audio output: %1$s</string>
+    <string name="remote_synthesis_failed">Desktop synthesis failed: %1$s</string>
+    <string name="remote_error_unknown_host">Address not found; check the server address</string>
+    <string name="remote_error_refused">Connection refused (service not running, or blocked by the firewall)</string>
+    <string name="remote_error_timeout">Timed out; make sure the phone and computer are on the same network</string>
+    <string name="remote_error_no_route">No route to the computer; check that both use the same Wi-Fi</string>
+    <string name="remote_error_ssl">Secure connection failed</string>
+
     <!-- Common -->
     <string name="error_open_settings_failed">Cannot open the settings page: %1$s</string>
     <string name="error_open_picker_failed">Cannot open the file picker: %1$s</string>

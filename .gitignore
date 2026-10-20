@@ -17,3 +17,9 @@ local.properties
 *.apk
 *.aab
 captures/
+
+# 电脑端 TTS 服务（server/）
+__pycache__/
+*.pyc
+server/cache/
+server/.venv/

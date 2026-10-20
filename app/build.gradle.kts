@@ -24,8 +24,8 @@ android {
         minSdk = 26
         targetSdk = 35
         // 自更新依赖 versionCode 比较：每次发布功能都必须 +1，否则「检查更新」不会认为有新版本
-        versionCode = 3
-        versionName = "0.3.0"
+        versionCode = 4
+        versionName = "0.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }

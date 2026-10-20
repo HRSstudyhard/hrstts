@@ -1,0 +1,14 @@
+﻿# TTS synthesis sweep - preset=quick device=10.62.61.43:46559
+# date=2026-10-17 01:44:50
+
+## default   (props: debug.jiandu.tuning=0; wall=98.9s)
+10-17 01:41:29.852 22650 22673 I TTSBENCH: configured: enabled=false talker=4 mtpFolded=4 mtpRef=2 codecA=4 codec=4 codecFp16=1 chunk=16
+10-17 01:41:29.852 22650 22673 I TTSBENCH: graphs: talker_int4 + mtp_folded_int8 + codec_partA + codec_partB
+10-17 01:41:31.419 22650 22673 I TTSBENCH: hostTablesLoadMs=1566 sampleRate=24000 chunk=16
+10-17 01:41:31.419 22650 22673 I TTSBENCH: preload graphs ...
+10-17 01:41:43.859 22650 22673 I TTSBENCH: graphPreloadMs=12439
+
+## chunk32   (props: debug.jiandu.chunkFrames=32 debug.jiandu.tuning=1; wall=67.3s)
+
+## threads8   (props: debug.jiandu.threads=8 debug.jiandu.tuning=1; wall=6s)
+

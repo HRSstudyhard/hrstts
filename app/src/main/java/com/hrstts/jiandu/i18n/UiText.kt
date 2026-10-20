@@ -26,6 +26,12 @@ object TextIds {
     val importEmptyFile = com.hrstts.jiandu.R.string.import_empty_file
     val engineFallbackToSystem = com.hrstts.jiandu.R.string.engine_fallback_to_system
     val engineSwitchedToQwen3 = com.hrstts.jiandu.R.string.engine_switched_to_qwen3
+    val remoteSwitched = com.hrstts.jiandu.R.string.remote_switched
+    val remoteFallbackToLocal = com.hrstts.jiandu.R.string.remote_fallback_to_local
+    val remoteSyncDone = com.hrstts.jiandu.R.string.remote_sync_done
+    val remoteSyncNoBook = com.hrstts.jiandu.R.string.remote_sync_no_book
+    val remoteNoServer = com.hrstts.jiandu.R.string.remote_no_server
+    val remoteSynthesisFailed = com.hrstts.jiandu.R.string.remote_synthesis_failed
     val engineStorageInsufficient = com.hrstts.jiandu.R.string.engine_storage_insufficient
     val engineDownloadIncomplete = com.hrstts.jiandu.R.string.engine_download_incomplete
     val engineDeleted = com.hrstts.jiandu.R.string.engine_deleted

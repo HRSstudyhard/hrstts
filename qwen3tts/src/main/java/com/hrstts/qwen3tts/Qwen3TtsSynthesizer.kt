@@ -66,6 +66,21 @@ class Qwen3TtsSynthesizer(private val modelDir: File) : AutoCloseable {
     val codecSplit: Boolean get() = engine.codecSplit
 
     /**
+     * 流式分块大小（新帧数）的**实际生效值**。
+     *
+     * 默认取 [Tuning.chunkFrames]（内置 16，可用 `setprop debug.jiandu.chunkFrames` 覆盖）。
+     * 声明为 `var` 是为了让调用方（`:app` 的适配器）能在不改常量的前提下做参数扫描：
+     * `synthesizeStreaming` 未显式传 `chunkFrames` 时用这里的值。
+     *
+     * 注意分块大小的取舍（见 docs/TTS-CONTINUITY.md §1.1）：调大 → codec 调用次数少、
+     * 整句总耗时低，但首音延迟变大、且可中断粒度变粗；调小则相反。
+     */
+    var chunkFrames: Int = Tuning.chunkFrames
+
+    /** 引擎当前生效的全部调参（线程数、FP16、分块），用于日志与界面诊断。 */
+    val tuningDescription: String get() = Tuning.describe()
+
+    /**
      * 预加载三个推理图（talker / MTP / codec，合计约 5 s、2 GB native 堆）。
      *
      * 图的创建本来推迟到首次合成；如果调用方希望在**空闲时**提前付掉这笔开销
@@ -152,7 +167,8 @@ class Qwen3TtsSynthesizer(private val modelDir: File) : AutoCloseable {
      *    因此任意切分不影响输出（与官方参考实现的尾部零填充行为一致）；
      *  - [shouldStop] 每生成一帧检查一次，返回 true 立即停止（用于「停止朗读」，不必等整句合成完）。
      *
-     * @param chunkFrames 每多少新帧解码一次（12.5 帧/秒 → 16 帧 ≈ 1.28 秒音频）
+     * @param chunkFrames 每多少新帧解码一次（12.5 帧/秒 → 16 帧 ≈ 1.28 秒音频）。
+     *   传 `0`（默认）表示使用实例属性 [chunkFrames]（即 [Tuning.chunkFrames] 的当前值）。
      * @param onPcm 在调用线程同步回调；该回调可以阻塞（AudioTrack 写入形成背压）
      */
     fun synthesizeStreaming(
@@ -161,11 +177,13 @@ class Qwen3TtsSynthesizer(private val modelDir: File) : AutoCloseable {
         speaker: FloatArray = this.speaker,
         greedy: Boolean = false,
         seed: Long? = null,
-        chunkFrames: Int = DEFAULT_CHUNK_FRAMES,
+        chunkFrames: Int = 0,
         shouldStop: () -> Boolean = { false },
         onFrame: (Int) -> Unit = {},
         onPcm: (FloatArray) -> Unit,
     ): Speech {
+        // 0 = 用实例属性（可用 setprop 覆盖）；显式传入则优先
+        val effectiveChunk = if (chunkFrames > 0) chunkFrames else this.chunkFrames
         val result = engine.synthesize(
             text = text,
             language = language,
@@ -179,7 +197,7 @@ class Qwen3TtsSynthesizer(private val modelDir: File) : AutoCloseable {
                     override fun onFrame(frame: Int) = onFrame(frame)
                 }
             },
-            streamChunkFrames = chunkFrames.coerceAtLeast(1),
+            streamChunkFrames = effectiveChunk.coerceAtLeast(1),
             onPcm = onPcm,
             shouldStop = shouldStop,
         )
@@ -233,9 +251,6 @@ class Qwen3TtsSynthesizer(private val modelDir: File) : AutoCloseable {
 
         /** 每帧音频的采样点数（12.5 帧/秒 × 24 kHz）。 */
         const val SAMPLES_PER_FRAME = 1920
-
-        /** 流式合成默认分块：16 帧 ≈ 1.28 秒音频 */
-        const val DEFAULT_CHUNK_FRAMES = 16
 
         /** 单次合成的最大帧数（官方引擎上限）。 */
         const val MAX_FRAMES = Qwen3TtsEngine.MAX_FRAMES

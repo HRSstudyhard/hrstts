@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  网络安全配置。
+
+  为什么需要它：Android 9（API 28）起默认禁止明文 HTTP。手机的「简读」要访问的是
+  局域网里电脑上的 http://10.x.x.x:8080 —— 这条链路没有证书，也不需要证书
+  （同一 WiFi 内的个人服务、临时地址）。
+
+  为什么是「全应用放开」而不是只放开某个域名：服务器地址由用户在设置里自己填，
+  DHCP 下每次可能是不同 IP（10.62.61.202 / 192.168.43.x / …），无法事先穷举。
+  网段也无法用 `<domain>` 表达（它只接受具体主机名），所以只能整体放开。
+
+  代价与边界：
+   * 本应用只会主动连两个地方 —— 用户自己填的局域网 TTS 服务、可选的更新清单；
+   * 更新清单走 HTTPS 时不受影响；若有人把它改成 http:// 才会失去传输保护；
+   * 想收紧的话，把下面 cleartextTrafficPermitted 改成 false，并为服务器地址
+     单独加一条 <domain-config>（但那样用户换 IP 就得重新装包）。
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

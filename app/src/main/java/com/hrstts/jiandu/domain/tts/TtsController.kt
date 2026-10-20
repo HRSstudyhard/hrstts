@@ -224,13 +224,17 @@ class TtsController {
         }
     }
 
-    /** 开关端侧预取（省电模式/低内存机型可关） */
+    /** 开关预取（省电模式/低内存机型可关） */
     fun setPrefetchEnabled(enabled: Boolean) {
         (engine as? Qwen3TtsEngine)?.prefetchEnabled = enabled
+        (engine as? com.hrstts.jiandu.data.tts.RemoteTtsEngine)?.prefetchEnabled = enabled
     }
 
     /** 退后台：清空引擎音频缓存的内存档（磁盘档保留） */
-    fun releaseAudioCacheMemory(): Long = (engine as? Qwen3TtsEngine)?.trimCacheForBackground() ?: 0L
+    fun releaseAudioCacheMemory(): Long =
+        (engine as? Qwen3TtsEngine)?.trimCacheForBackground()
+            ?: (engine as? com.hrstts.jiandu.data.tts.RemoteTtsEngine)?.trimCacheForBackground()
+            ?: 0L
 
     /**
      * 段内预取：把**当前段落剩余的所有句子**排进引擎的预取队列。

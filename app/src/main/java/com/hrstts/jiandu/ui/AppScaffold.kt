@@ -52,12 +52,14 @@ import com.hrstts.jiandu.ui.permission.PermissionDialog
 import com.hrstts.jiandu.ui.reader.ReaderActions
 import com.hrstts.jiandu.ui.reader.ReaderEmptyState
 import com.hrstts.jiandu.ui.reader.ReaderScreen
+import com.hrstts.jiandu.ui.settings.RemoteTtsCard
 import com.hrstts.jiandu.ui.settings.VoiceEngineCard
 import com.hrstts.jiandu.ui.text.resolve
 import com.hrstts.jiandu.ui.update.UpdateDialog
 import com.hrstts.jiandu.viewmodel.HistoryViewModel
 import com.hrstts.jiandu.viewmodel.PermissionViewModel
 import com.hrstts.jiandu.viewmodel.ReaderViewModel
+import com.hrstts.jiandu.viewmodel.RemoteTtsViewModel
 import com.hrstts.jiandu.viewmodel.UpdateViewModel
 import com.hrstts.jiandu.viewmodel.VoiceEngineViewModel
 import kotlinx.coroutines.launch
@@ -75,6 +77,7 @@ fun AppScaffold(
     readerViewModel: ReaderViewModel = viewModel(),
     historyViewModel: HistoryViewModel = viewModel(),
     voiceEngineViewModel: VoiceEngineViewModel = viewModel(),
+    remoteTtsViewModel: RemoteTtsViewModel = viewModel(),
     permissionViewModel: PermissionViewModel = viewModel(),
     updateViewModel: UpdateViewModel = viewModel(),
 ) {
@@ -84,6 +87,8 @@ fun AppScaffold(
     val modelState by voiceEngineViewModel.modelState.collectAsStateWithLifecycle()
     val engineMessage by voiceEngineViewModel.message.collectAsStateWithLifecycle()
     val probeResult by voiceEngineViewModel.probeResult.collectAsStateWithLifecycle()
+    val remoteState by remoteTtsViewModel.state.collectAsStateWithLifecycle()
+    val remoteSync by readerViewModel.remoteSync.collectAsStateWithLifecycle()
     val permissionState by permissionViewModel.snapshot.collectAsStateWithLifecycle()
     val permissionDialogVisible by permissionViewModel.dialogVisible.collectAsStateWithLifecycle()
     val updateState by updateViewModel.state.collectAsStateWithLifecycle()
@@ -94,6 +99,12 @@ fun AppScaffold(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // 设置卡里改了地址/音色/开关 → 让阅读区重新评估该挂哪个引擎
+    // （地址变了必须重建引擎，旧引擎还指着旧地址）
+    LaunchedEffect(remoteTtsViewModel, readerViewModel) {
+        remoteTtsViewModel.onSettingsChanged = readerViewModel::onRemoteSettingsChanged
+    }
 
     // 文本导入：SAF 文件选择器（不需要任何存储权限）
     val importLauncher = rememberLauncherForActivityResult(
@@ -261,6 +272,16 @@ fun AppScaffold(
                     },
                     onRemove = historyViewModel::remove,
                     footer = {
+                        RemoteTtsCard(
+                            state = remoteState,
+                            sync = remoteSync,
+                            onEnabledChange = remoteTtsViewModel::setEnabled,
+                            onServerUrlChange = remoteTtsViewModel::editServerUrl,
+                            onCommitServerUrl = remoteTtsViewModel::commitServerUrl,
+                            onVoiceChange = remoteTtsViewModel::setVoice,
+                            onTest = remoteTtsViewModel::testConnection,
+                            onSync = readerViewModel::syncBookToPhone,
+                        )
                         VoiceEngineCard(
                             state = modelState,
                             activeEngineName = ttsState.engineName.ifEmpty {

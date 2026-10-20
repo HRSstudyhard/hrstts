@@ -159,25 +159,38 @@ class Qwen3TtsEngine(private val dir: File) {
     private var codecAModel: CompiledModel? = null
     private var codecModel: CompiledModel? = null
 
-    private val talker: CompiledModel get() = talkerModel ?: load("talker_int4.tflite", 4).also { talkerModel = it }
+    // 线程数与 XNNPACK 标志走 Tuning（可用 setprop 覆盖，见 Tuning 的类注释）。
+    // 内置默认值与原写死的常量完全一致（talker 4 / mtp 折叠 4 / mtp 参考 2 / codec 4 + FP16），
+    // 因此不设置任何属性时行为与加入 Tuning 之前逐位一致。
+    private val talker: CompiledModel
+        get() = talkerModel ?: load("talker_int4.tflite", Tuning.talkerThreads).also { talkerModel = it }
 
     // The reference MTP graph keeps the pipeline's 2 threads; the folded graph, one
     // larger invoke per frame, gets the 4 the other graphs use.
     private val mtp: CompiledModel
-        get() = mtpModel ?: (if (mtpFolded) load("mtp_folded_int8.tflite", 4) else load("mtp_fp32.tflite", 2))
-            .also { mtpModel = it }
+        get() = mtpModel ?: (
+            if (mtpFolded) {
+                load("mtp_folded_int8.tflite", Tuning.mtpFoldedThreads)
+            } else {
+                load("mtp_fp32.tflite", Tuning.mtpReferenceThreads)
+            }
+            ).also { mtpModel = it }
 
     private val codecA: CompiledModel?
         get() {
             if (!codecSplit) return null
-            return codecAModel ?: load("codec_partA.tflite", 4).also { codecAModel = it }
+            return codecAModel ?: load("codec_partA.tflite", Tuning.codecAThreads).also { codecAModel = it }
         }
 
     private val codec: CompiledModel
         get() = codecModel ?: (if (codecSplit) {
-            load("codec_partB.tflite", 4, XNNPACK_FORCE_FP16)
+            load(
+                "codec_partB.tflite",
+                Tuning.codecThreads,
+                if (Tuning.codecForceFp16) XNNPACK_FORCE_FP16 else null,
+            )
         } else {
-            load("codec_decoder_fp32.tflite", 4)
+            load("codec_decoder_fp32.tflite", Tuning.codecThreads)
         }).also { codecModel = it }
 
     /** File names of the graphs in use, for the status line and the log. */

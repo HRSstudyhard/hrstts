@@ -1,6 +1,7 @@
 package com.hrstts.jiandu.data.tts
 
 import android.content.Context
+import com.hrstts.jiandu.domain.tts.RemoteTtsProtocol
 import java.io.File
 import java.security.MessageDigest
 import java.util.LinkedHashMap
@@ -87,10 +88,46 @@ class TtsAudioCache(
 
     /** 合成结束：把整段写入两档缓存 */
     fun put(key: String, pcm: FloatArray, frames: Int) {
-        val clip = Clip(toShorts(pcm), frames)
+        putShorts(key, toShorts(pcm), frames)
+    }
+
+    /**
+     * 直接写入 int16 PCM。
+     *
+     * 远程引擎（[RemoteTtsEngine]）拿到的本来就是 int16，走 [put] 会多做一次
+     * int16→float→int16 的无谓往返（44.1 KB/s × 2 倍临时内存）。
+     */
+    fun putShorts(key: String, pcm: ShortArray, frames: Int) {
+        val clip = Clip(pcm, frames)
         putMemory(key, clip)
         writeDisk(key, clip)
         trimDisk()
+    }
+
+    /**
+     * 直接落盘一段**已经打包好的片段**（`jdpc` 头 + int16 PCM）。
+     *
+     * 供「从电脑同步整本音频」使用：服务端下发的字节和设备自己的磁盘格式完全相同，
+     * 所以这里只校验文件头就原样写盘，不需要解码再编码。
+     *
+     * @return 是否写入成功（头不合法 / 写盘失败返回 false）
+     */
+    fun putEncoded(key: String, blob: ByteArray): Boolean {
+        if (RemoteTtsProtocol.parseFrames(blob) == null) return false
+        return try {
+            val target = diskFile(key)
+            val tmp = File(diskDir, "$key.tmp")
+            tmp.writeBytes(blob)
+            if (target.exists()) target.delete()
+            if (!tmp.renameTo(target)) {
+                tmp.delete()
+                return false
+            }
+            trimDisk()
+            true
+        } catch (_: Throwable) {
+            false
+        }
     }
 
     /** 直接放入内存档（例如磁盘读回） */

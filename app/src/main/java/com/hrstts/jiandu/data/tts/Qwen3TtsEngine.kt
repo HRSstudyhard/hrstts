@@ -8,6 +8,7 @@ import com.hrstts.jiandu.domain.tts.TtsEngine
 import com.hrstts.jiandu.domain.tts.TtsListener
 import com.hrstts.jiandu.i18n.UiStrings
 import com.hrstts.qwen3tts.Qwen3TtsSynthesizer
+import com.hrstts.qwen3tts.Tuning
 import java.io.File
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
@@ -92,6 +93,9 @@ class Qwen3TtsEngine(
                 val loadedAt = System.nanoTime()
                 synthesizer = engine
                 isReady = true
+                // 把本次生效的调参（线程数 / FP16 / 分块）写进日志，
+                // 便于在真机 logcat 里核对「这一轮跑的是哪一档」。
+                Tuning.logTo(LOG_TAG)
                 // 拆开计时：文件校验 / 宿主表 + 图加载，便于定位「加载过慢」到底慢在哪一步
                 android.util.Log.i(
                     LOG_TAG,
@@ -493,16 +497,18 @@ class Qwen3TtsEngine(
         private const val WORKER_JOIN_TIMEOUT_MS = 1_000L
 
         /**
-         * 流式分块大小（新帧数）：16 帧 ≈ 1.28 秒音频。
+         * 流式分块大小（新帧数）。
+         *
+         * 实际值由 `:qwen3tts` 的 `Tuning` 决定（默认 16 帧 ≈ 1.28 秒音频），
+         * 可用 `adb shell setprop debug.jiandu.chunkFrames <n>` 覆盖后重启进程来扫描。
          *
          * 这是「首音延迟 / 整句总耗时 / 可中断粒度」三者的旋钮（见 docs/P3-STATUS.md §4）：
          *  - 调大（24~48）：编解码器调用少 → 总耗时与 RTF 更低（实测 48 时 RTF 5~7 → 3.5~3.9）；
          *    但**可中断粒度变粗**（一个块要合成数秒），切句时旧线程迟迟不退出 →
          *    与下一句重叠、KV 缓存翻倍（实测 PSS 冲到 5 GB）。
          *  - 调小（16）：切句细、内存稳，但总耗时高、句间空档更长。
-         * 取 16 作为稳妥值；性能优化改用非并发手段（缓存/预取）来摊薄。
          */
-        private const val CHUNK_FRAMES = 16
+        private val CHUNK_FRAMES: Int get() = Tuning.chunkFrames
 
         /** 每帧采样点数：12.5 帧/秒 × 24 kHz */
         private const val SAMPLES_PER_FRAME = 1920

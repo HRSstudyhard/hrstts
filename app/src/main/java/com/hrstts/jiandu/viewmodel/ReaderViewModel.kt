@@ -11,6 +11,9 @@ import com.hrstts.jiandu.data.db.AppDatabase
 import com.hrstts.jiandu.data.db.HistoryEntry
 import com.hrstts.jiandu.data.tts.Qwen3ModelManager
 import com.hrstts.jiandu.data.tts.Qwen3TtsEngine
+import com.hrstts.jiandu.data.tts.RemoteTtsClient
+import com.hrstts.jiandu.data.tts.RemoteTtsEngine
+import com.hrstts.jiandu.data.tts.RemoteTtsSettings
 import com.hrstts.jiandu.data.tts.SystemTtsEngine
 import com.hrstts.jiandu.data.tts.TtsAudioCache
 import com.hrstts.jiandu.domain.model.Book
@@ -19,6 +22,7 @@ import com.hrstts.jiandu.domain.model.ReadingAnchor
 import com.hrstts.jiandu.domain.parser.TextParser
 import com.hrstts.jiandu.domain.tts.ReadingSegment
 import com.hrstts.jiandu.domain.tts.ReadingSegments
+import com.hrstts.jiandu.domain.tts.RemoteTtsProtocol
 import com.hrstts.jiandu.domain.tts.TtsController
 import com.hrstts.jiandu.domain.tts.TtsStatus
 import com.hrstts.jiandu.domain.tts.TtsUiState
@@ -53,6 +57,14 @@ data class ReaderUiState(
     val isEmptyBook: Boolean get() = book != null && book.charCount == 0
 }
 
+/** 整本音频同步状态（下载阶段的进度；预合成阶段的进度来自服务端，只用于显示） */
+@Immutable
+data class RemoteSyncState(
+    val running: Boolean = false,
+    val total: Int = 0,
+    val done: Int = 0,
+)
+
 /**
  * 阅读区状态持有者。
  *
@@ -81,9 +93,26 @@ class ReaderViewModel(
      */
     private val audioCache = TtsAudioCache(application)
 
+    /** 远程（电脑合成）设置；与 RemoteTtsViewModel 共享同一份 SharedPreferences */
+    private val remoteSettings = RemoteTtsSettings(application)
+
     /** 当前是否使用端侧 Qwen3-TTS 引擎 */
     private var usingQwen3 = false
     private var fellBackToSystem = false
+
+    /** 当前是否使用电脑合成引擎 */
+    private var usingRemote = false
+
+    /** 当前挂着的远程引擎（用于取「服务端实际选中的音色」，同步时要算同款缓存 key） */
+    private var remoteEngine: RemoteTtsEngine? = null
+
+    /** 当前远程引擎指向的服务器地址（用户改地址时需要重建引擎） */
+    private var attachedRemoteBaseUrl: String = ""
+
+    private val _remoteSync = MutableStateFlow(RemoteSyncState())
+
+    /** 整本音频同步的进度（界面显示「同步中 12 / 340」） */
+    val remoteSync: StateFlow<RemoteSyncState> = _remoteSync.asStateFlow()
 
     /**
      * 上一次**真正落盘**的阅读位置。
@@ -111,24 +140,32 @@ class ReaderViewModel(
     val uiState: StateFlow<ReaderUiState> = _uiState.asStateFlow()
 
     init {
-        // 端侧模型已完整安装 → 使用 Qwen3-TTS；否则使用系统语音
-        if (modelManager.isInstalled()) {
-            attachQwen3(switchedMessage = null)
-        } else {
-            ttsController.attach(SystemTtsEngine(application.applicationContext, strings))
+        // 引擎优先级：用户在设置里配了电脑地址 → 电脑合成；否则端侧模型 → Qwen3-TTS；再否则系统语音。
+        // 顺序的理由：远程合成本质上是「把手机做不动的事外包出去」，用户显式配置了就该优先；
+        // 而端侧模型装了就说明用户愿意本机离线朗读，不该被一个连不上的地址顶掉——那由回退链兜底。
+        when {
+            remoteSettings.isConfigured -> attachRemote(switchedMessage = null)
+            modelManager.isInstalled() -> attachQwen3(switchedMessage = null)
+            else -> ttsController.attach(SystemTtsEngine(application.applicationContext, strings))
         }
 
-        // 端侧引擎不可用（设备 ABI 不支持 / 内存不足 / 模型损坏）→ 自动回退系统语音
+        // 回退链（单向，只回退一次，避免反复横跳）：
+        //   电脑连不上 → 端侧（已装）/ 系统语音
+        //   端侧不可用 → 系统语音
         viewModelScope.launch {
             ttsState.collect { state ->
-                if (usingQwen3 && !fellBackToSystem && state.status == TtsStatus.Error) {
-                    fellBackToSystem = true
-                    usingQwen3 = false
-                    ttsController.attach(
-                        SystemTtsEngine(getApplication(), strings),
-                    )
-                    _uiState.update {
-                        it.copy(message = uiText(TextIds.engineFallbackToSystem))
+                if (state.status != TtsStatus.Error) return@collect
+                when {
+                    usingRemote && remoteSettings.autoFallback -> fallBackFromRemote()
+                    usingQwen3 && !fellBackToSystem -> {
+                        fellBackToSystem = true
+                        usingQwen3 = false
+                        ttsController.attach(
+                            SystemTtsEngine(getApplication(), strings),
+                        )
+                        _uiState.update {
+                            it.copy(message = uiText(TextIds.engineFallbackToSystem))
+                        }
                     }
                 }
             }
@@ -189,8 +226,10 @@ class ReaderViewModel(
      * 进程推到被系统回收（模拟器 8 GB 下实测进程消失）。
      */
     private fun attachQwen3(switchedMessage: Int?) {
-        if (usingQwen3 || fellBackToSystem) return
+        if (usingQwen3) return
         usingQwen3 = true
+        usingRemote = false
+        remoteEngine = null
         val engine = Qwen3TtsEngine(modelManager.modelDir, strings, audioCache)
         ttsController.attach(engine)
         engine.initialize()
@@ -213,6 +252,188 @@ class ReaderViewModel(
             _uiState.update { it.copy(message = uiText(switchedMessage)) }
         }
     }
+
+    /**
+     * 装载电脑合成引擎。
+     *
+     * 与 [attachQwen3] 不同，它几乎不占内存（不加载模型），初始化只是发一个 `GET /v1/health`，
+     * 所以可以较快地失败并把错误交给回退链。
+     */
+    private fun attachRemote(switchedMessage: Int?) {
+        if (usingRemote) return
+        usingRemote = true
+        usingQwen3 = false
+        fellBackToSystem = false
+        attachedRemoteBaseUrl = remoteSettings.baseUrl
+        val engine = RemoteTtsEngine(remoteSettings, strings, audioCache)
+        remoteEngine = engine
+        ttsController.attach(engine)
+        engine.initialize()
+        android.util.Log.i(
+            "ReaderViewModel",
+            "attach remote engine: ${remoteSettings.baseUrl} autoFallback=${remoteSettings.autoFallback}",
+        )
+        if (switchedMessage != null) {
+            _uiState.update { it.copy(message = uiText(switchedMessage)) }
+        }
+    }
+
+    /** 电脑连不上时的回退：有端侧模型就用端侧，否则用系统语音。 */
+    private fun fallBackFromRemote() {
+        if (!usingRemote) return
+        usingRemote = false
+        remoteEngine = null
+        if (modelManager.isInstalled()) {
+            attachQwen3(switchedMessage = null)
+        } else {
+            usingQwen3 = false
+            ttsController.attach(SystemTtsEngine(getApplication(), strings))
+        }
+        android.util.Log.w("ReaderViewModel", "远程引擎不可用，已回退本地引擎")
+        _uiState.update { it.copy(message = uiText(TextIds.remoteFallbackToLocal)) }
+    }
+
+    /**
+     * 用户在设置里改了服务器地址 / 音色 / 开关后调用，重新评估该用哪个引擎。
+     *
+     * 地址变了必须重建引擎（旧引擎还指着旧地址），所以这里按 baseUrl 判断而不是只看开关。
+     */
+    fun onRemoteSettingsChanged() {
+        val configured = remoteSettings.isConfigured
+        val baseUrl = remoteSettings.baseUrl
+        if (configured) {
+            if (!usingRemote) {
+                attachRemote(switchedMessage = TextIds.remoteSwitched)
+            } else if (baseUrl != attachedRemoteBaseUrl) {
+                remoteEngine?.shutdown()
+                usingRemote = false
+                attachRemote(switchedMessage = TextIds.remoteSwitched)
+            }
+        } else if (usingRemote) {
+            // 用户关掉了「使用电脑合成」→ 回到本地引擎
+            usingRemote = false
+            remoteEngine?.shutdown()
+            remoteEngine = null
+            if (modelManager.isInstalled()) {
+                attachQwen3(switchedMessage = null)
+            } else {
+                usingQwen3 = false
+                ttsController.attach(SystemTtsEngine(getApplication(), strings))
+            }
+        }
+    }
+
+    // ---- 整本音频同步 ----
+
+    /**
+     * 把当前这本书的音频**预下载到手机**。
+     *
+     * 流程（三段都很关键）：
+     *  1. 本地算好每个句子的缓存 key，先剔掉手机里已经有的（省流量、省时间）；
+     *  2. 把缺的丢给服务端做后台预合成（电脑比手机快 10~90 倍，整本几分钟就合完）；
+     *  3. 轮询进度，就绪后逐段下载并**直接写进现有缓存**（格式与服务端一致，不用转码）。
+     *
+     * 完成后即使电脑关机、手机断网，这本书也能连续朗读——这才是「同步到手机上」的完整含义。
+     */
+    fun syncBookToPhone() {
+        if (_remoteSync.value.running) return
+        val book = _uiState.value.book
+        if (book == null) {
+            _uiState.update { it.copy(message = uiText(TextIds.remoteSyncNoBook)) }
+            return
+        }
+        val baseUrl = remoteSettings.baseUrl
+        if (baseUrl.isEmpty()) {
+            _uiState.update { it.copy(message = uiText(TextIds.remoteNoServer)) }
+            return
+        }
+        val voiceId = remoteEngine?.currentVoiceId ?: remoteSettings.voice
+        val modelTag = remoteEngine?.currentModelTag ?: RemoteTtsProtocol.DEFAULT_MODEL_TAG
+
+        _remoteSync.value = RemoteSyncState(running = true)
+        viewModelScope.launch {
+            val client = RemoteTtsClient(baseUrl)
+            try {
+                // 1) 句级去重：同一句话在书里出现多次只合成一次（缓存 key 本来就相同）
+                val texts = ReadingSegments.fromBook(book)
+                    .map { it.text.trim() }
+                    .filter { it.isNotEmpty() }
+                    .distinct()
+                val keys = texts.map { RemoteTtsProtocol.keyOf(it, voiceId, modelTag) }
+                val missingIndices = keys.indices.filter { !audioCache.contains(keys[it]) }
+                val missing = missingIndices.map { keys[it] to texts[it] }
+                _remoteSync.value = RemoteSyncState(
+                    running = true,
+                    total = missing.size,
+                    done = 0,
+                )
+                if (missing.isEmpty()) {
+                    _remoteSync.value = RemoteSyncState()
+                    _uiState.update {
+                        it.copy(message = uiText(TextIds.remoteSyncDone, keys.size))
+                    }
+                    return@launch
+                }
+
+                // 2) 交给电脑后台预合成
+                val bookId = bookSyncId(book)
+                client.requestSync(bookId, voiceId, missing)
+
+                // 3) 等电脑合完（本机 RTF 0.01~0.08，整本通常几分钟；给足 30 分钟上限）
+                val deadline = System.currentTimeMillis() + SYNC_TIMEOUT_MS
+                while (System.currentTimeMillis() < deadline) {
+                    val progress = client.syncProgress(bookId)
+                    if (progress == null) break
+                    _remoteSync.value = RemoteSyncState(
+                        running = true,
+                        total = progress.total,
+                        done = progress.done,
+                    )
+                    if (!progress.running) break
+                    kotlinx.coroutines.delay(SYNC_POLL_MS)
+                }
+
+                // 4) 逐段下载并写入现有缓存（字节格式与服务端完全一致）
+                var downloaded = 0
+                for ((index, pair) in missing.withIndex()) {
+                    val key = pair.first
+                    val blob = client.fetchClip(key) ?: continue
+                    if (audioCache.putEncoded(key, blob)) downloaded++
+                    if (index % 8 == 0) {
+                        _remoteSync.value = RemoteSyncState(
+                            running = true,
+                            total = missing.size,
+                            done = downloaded,
+                        )
+                    }
+                }
+                _remoteSync.value = RemoteSyncState()
+                android.util.Log.i(
+                    "ReaderViewModel",
+                    "整本同步完成：候选=${keys.size} 需下载=${missing.size} 实际写入=$downloaded",
+                )
+                _uiState.update {
+                    it.copy(message = uiText(TextIds.remoteSyncDone, downloaded))
+                }
+            } catch (t: Throwable) {
+                if (t is kotlinx.coroutines.CancellationException) throw t
+                android.util.Log.e("ReaderViewModel", "整本同步失败", t)
+                _remoteSync.value = RemoteSyncState()
+                _uiState.update {
+                    it.copy(
+                        message = uiText(
+                            TextIds.remoteSynthesisFailed,
+                            t.message ?: t.javaClass.simpleName,
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
+    /** 同步用的书 id：同一本书（文件名+字数）稳定，服务端据此复用进度。 */
+    private fun bookSyncId(book: Book): String =
+        RemoteTtsProtocol.keyOf(book.name, book.charCount.toString(), "book").take(16)
 
     /** 退后台：释放音频缓存的内存档（磁盘档保留，回前台首句仍可秒开） */
     fun releaseAudioCacheMemory(): Long = audioCache.clearMemory()
@@ -537,6 +758,12 @@ class ReaderViewModel(
         /** SavedStateHandle 键：用于跨配置变更（旋转）保留阅读位置 */
         const val KEY_SAVED_CHAPTER = "saved_chapter"
         const val KEY_SAVED_PARAGRAPH = "saved_paragraph"
+
+        /** 整本同步：轮询服务端预合成进度的间隔 */
+        const val SYNC_POLL_MS = 1_000L
+
+        /** 整本同步：等待服务端合完的上限（一本 3 小时有声书在本机约 6~20 分钟） */
+        const val SYNC_TIMEOUT_MS = 30 * 60 * 1000L
     }
 
     /** 取「更靠后」的阅读位置：先比章节，再比段落；都为空返回 null */
